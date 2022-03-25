@@ -2,10 +2,17 @@ import { LightningElement,wire,track,api } from 'lwc';
 import { getRecord } from "lightning/uiRecordApi";
 import { loadScript } from "lightning/platformResourceLoader";
 import AWS_SDK from "@salesforce/resourceUrl/AWSS";
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+const columns = [
+  { label: 'File Name', fieldName: 'Key' },
+  { label: 'Size', fieldName: 'Size', type: 'integer' }
+];
 
 export default class Fileupload_aws_s3bucket extends LightningElement {
-
-
+  data = [];
+  columns = columns;
+  isData=false;
     /*========= Start - variable declaration =========*/
   s3; //store AWS S3 object
   isAwsSdkInitialized = false; //flag to check if AWS SDK initialized
@@ -67,8 +74,8 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
   initializeAwsSdk() {
     const AWS = window.AWS;
     AWS.config.update({
-      accessKeyId: 'AKIAQ3OARRTOFFX3GE4J', //Assigning access key id
-      secretAccessKey: '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' //Assigning secret access key
+      accessKeyId: 'AKIAQ3OARRTOE7VL3K73', //Assigning access key id
+      secretAccessKey: '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' //Assigning secret access key
     });
 
     AWS.config.region = 'sa-east-1'; //Assigning region of S3 bucket
@@ -114,12 +121,14 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
             this.showSpinner = false;
             console.log("Success");
             this.listS3Objects();
+            this.busketVersion();
+            this.showToastNow();
           }
         }
       );
     }
   }
-
+  
   //listing all stored documents from S3 bucket
   listS3Objects() {
     console.log("AWS list files -> " + JSON.stringify(this.s3));
@@ -128,13 +137,16 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
         console.log("Error history", err);
       } else {
         console.log("Success history", data);
-        this.deleteObjects();
+        this.data = data.Contents;
+        this.isData=true;
+       // this.deleteObjects();
       }
     });
   }
 
   //retrieves bucket versioning configuration
  busketVersion(){
+   console.log('my data :',this.data);
    console.log('bucket version method called ');
   var params = {
     Bucket: "dropbicket"
@@ -150,23 +162,42 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
      */
    });
  }
+
+ getSelectedRec() {
+  var selectedRecords =  this.template.querySelector("lightning-datatable").getSelectedRows();
+  if(selectedRecords.length > 0){
+      console.log('selectedRecords are ', selectedRecords);
+      selectedRecords.forEach(currentItem => {
+          console.log('keys are : ',currentItem.Key);
+          this.deleteObjects(currentItem.Key);
+      });
+  }   
+}
+
+
  //delete the file 
-  deleteObjects()
+  deleteObjects(pdfKey)
   {
     var params = {
       Bucket: "dropbicket", 
       Delete: {
        Objects: [
           {
-         Key: "document.pdf"
+         Key: pdfKey
         }
        ], 
        Quiet: false
       }
      };
      this.s3.deleteObjects(params, function(err, data) {
-       if (err) console.log(err, err.stack); // an error occurred
-       else     console.log('object deleted successful : ',data);           // successful response
+       if (data) {
+         console.log('object deleted successful : ',data); 
+        }
+       else {
+        console.log(err, err.stack);
+            }
+                 
+                 
        /*
        data = {
         Deleted: [
@@ -186,4 +217,12 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
      });
 
   }
+showToastNow() {
+  const event = new ShowToastEvent({
+      title: 'Success',
+      message:
+          'This File Uploded successfully'
+  });
+  this.dispatchEvent(event);
+}
 }
