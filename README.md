@@ -19,6 +19,18 @@ NOTE :- For CORS in AWS
             "https://dhoom-dev-ed.lightning.force.com"
         ],
         "ExposeHeaders": []
+    },
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET"
+        ],
+        "AllowedOrigins": [
+            "https://dhoom-dev-ed.lightning.force.com"
+        ],
+        "ExposeHeaders": []
     }
 ]
 
