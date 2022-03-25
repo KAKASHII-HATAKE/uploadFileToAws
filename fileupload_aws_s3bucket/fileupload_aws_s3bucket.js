@@ -122,13 +122,68 @@ export default class Fileupload_aws_s3bucket extends LightningElement {
 
   //listing all stored documents from S3 bucket
   listS3Objects() {
-    //console.log("AWS -> " + JSON.stringify(this.s3));
+    console.log("AWS list files -> " + JSON.stringify(this.s3));
     this.s3.listObjects((err, data) => {
       if (err) {
-        console.log("Error", err);
+        console.log("Error history", err);
       } else {
-        console.log("Success", data);
+        console.log("Success history", data);
+        this.deleteObjects();
       }
     });
+  }
+
+  //retrieves bucket versioning configuration
+ busketVersion(){
+   console.log('bucket version method called ');
+  var params = {
+    Bucket: "dropbicket"
+   };
+   this.s3.getBucketVersioning(params, function(err, data) {
+     if (err) console.log(err, err.stack); // an error occurred
+     else     console.log('my bucket version : ',data);           // successful response
+     /*
+     data = {
+      MFADelete: "Disabled", 
+      Status: "Enabled"
+     }
+     */
+   });
+ }
+ //delete the file 
+  deleteObjects()
+  {
+    var params = {
+      Bucket: "dropbicket", 
+      Delete: {
+       Objects: [
+          {
+         Key: "document.pdf"
+        }
+       ], 
+       Quiet: false
+      }
+     };
+     this.s3.deleteObjects(params, function(err, data) {
+       if (err) console.log(err, err.stack); // an error occurred
+       else     console.log('object deleted successful : ',data);           // successful response
+       /*
+       data = {
+        Deleted: [
+           {
+          DeleteMarker: true, 
+          DeleteMarkerVersionId: "A._w1z6EFiCF5uhtQMDal9JDkID9tQ7F", 
+          Key: "objectkey1"
+         }, 
+           {
+          DeleteMarker: true, 
+          DeleteMarkerVersionId: "iOd_ORxhkKe_e8G8_oSGxt2PjsCZKlkt", 
+          Key: "objectkey2"
+         }
+        ]
+       }
+       */
+     });
+
   }
 }
