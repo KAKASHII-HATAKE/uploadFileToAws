@@ -17,4 +17,15 @@
             </lightning-spinner>
         </template>
     </lightning-card>
+    <template if:true={isData}>
+        <lightning-card title="AWS Uploded File">
+            <div style="height: 300px;">
+                <lightning-datatable key-field="id" data={data} columns={columns}>
+                </lightning-datatable>
+            </div>
+            <lightning-button variant="Neutral" label="Delete Records" title="Delete Records" onclick={getSelectedRec}
+                slot="actions" icon-name="utility:check">
+            </lightning-button>
+        </lightning-card>
+    </template>
 </template>
